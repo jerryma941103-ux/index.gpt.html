@@ -1,1 +1,452 @@
-<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>二波交易系统V3</title></head><body><h1>二波交易系统V3</h1><p>上传此文件到GitHub后可继续迭代。</p></body></html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>二波交易评分系统 V4</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+
+background:#0B1220;
+
+font-family:-apple-system,BlinkMacSystemFont,"PingFang SC";
+
+color:white;
+
+padding:20px;
+
+}
+
+.container{
+
+max-width:900px;
+
+margin:auto;
+
+}
+
+.title{
+
+font-size:34px;
+
+font-weight:bold;
+
+text-align:center;
+
+margin-bottom:8px;
+
+}
+
+.subtitle{
+
+text-align:center;
+
+color:#9CA3AF;
+
+margin-bottom:25px;
+
+}
+
+.card{
+
+background:#111827;
+
+padding:18px;
+
+border-radius:14px;
+
+margin-bottom:20px;
+
+box-shadow:0 0 15px rgba(0,0,0,.3);
+
+}
+
+.card h2{
+
+margin-bottom:15px;
+
+color:#4ECDC4;
+
+}
+
+.grid{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:15px;
+
+}
+
+label{
+
+display:block;
+
+font-size:13px;
+
+margin-bottom:5px;
+
+color:#9CA3AF;
+
+}
+
+input{
+
+width:100%;
+
+padding:10px;
+
+background:#1F2937;
+
+border:none;
+
+border-radius:8px;
+
+color:white;
+
+font-size:15px;
+
+}
+
+.score{
+
+font-size:70px;
+
+text-align:center;
+
+font-weight:bold;
+
+color:#00FF87;
+
+margin-top:20px;
+
+}
+
+.result{
+
+text-align:center;
+
+font-size:26px;
+
+font-weight:bold;
+
+margin-top:10px;
+
+}
+
+.info{
+
+margin-top:25px;
+
+font-size:16px;
+
+line-height:30px;
+
+}
+
+button{
+
+width:100%;
+
+padding:15px;
+
+border:none;
+
+border-radius:10px;
+
+font-size:18px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+margin-top:20px;
+
+background:#00C853;
+
+color:black;
+
+}
+
+button:hover{
+
+opacity:.9;
+
+}
+
+@media(max-width:700px){
+
+.grid{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="title">
+
+🚀 二波交易系统 V4
+
+</div>
+
+<div class="subtitle">
+
+Jerry Ma 专属版本
+
+</div>
+
+<div class="card">
+
+<h2>股票信息</h2>
+
+<div class="grid">
+
+<div>
+
+<label>股票名称</label>
+
+<input id="stock">
+
+</div>
+
+<div>
+
+<label>股票代码</label>
+
+<input id="code">
+
+</div>
+
+<div>
+
+<label>二板最高价</label>
+
+<input id="high" type="number" step="0.01">
+
+</div>
+
+<div>
+
+<label>回调最低价</label>
+
+<input id="low" type="number" step="0.01">
+
+</div>
+
+<div>
+
+<label>二板成交量(万)</label>
+
+<input id="vol1" type="number">
+
+</div>
+
+<div>
+
+<label>当前成交量(万)</label>
+
+<input id="vol2" type="number">
+
+</div>
+
+<div>
+
+<label>回调天数</label>
+
+<input id="days" type="number">
+
+</div>
+
+</div>
+
+<button onclick="nextPage()">
+
+开始评分
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>自动计算</h2>
+
+<div class="info">
+
+<div>
+
+回调幅度：
+
+<span id="pullback">
+
+--
+
+</span>
+
+%
+
+</div>
+
+<div>
+
+缩量比例：
+
+<span id="volume">
+
+--
+
+</span>
+
+%
+
+</div>
+
+<div>
+
+洗盘质量：
+
+<span id="wash">
+
+--
+
+</span>
+
+/30
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="score" id="total">
+
+0
+
+</div>
+
+<div class="result" id="advice">
+
+等待评分
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function nextPage(){
+
+let high=Number(document.getElementById("high").value);
+
+let low=Number(document.getElementById("low").value);
+
+let vol1=Number(document.getElementById("vol1").value);
+
+let vol2=Number(document.getElementById("vol2").value);
+
+let days=Number(document.getElementById("days").value);
+
+let pull=((high-low)/high*100);
+
+if(isNaN(pull))pull=0;
+
+document.getElementById("pullback").innerHTML=pull.toFixed(2);
+
+let ratio=(vol2/vol1*100);
+
+if(isNaN(ratio))ratio=0;
+
+document.getElementById("volume").innerHTML=ratio.toFixed(1);
+
+let wash=0;
+
+if(pull>=15&&pull<=20){
+
+wash+=15;
+
+}else if(pull>=20&&pull<=25){
+
+wash+=12;
+
+}else if(pull>=10&&pull<15){
+
+wash+=10;
+
+}else if(pull>=25&&pull<=30){
+
+wash+=8;
+
+}
+
+if(ratio<=30){
+
+wash+=10;
+
+}else if(ratio<=50){
+
+wash+=7;
+
+}else if(ratio<=70){
+
+wash+=4;
+
+}
+
+if(days>=8&&days<=15){
+
+wash+=5;
+
+}else if(days>=5){
+
+wash+=3;
+
+}
+
+document.getElementById("wash").innerHTML=wash;
+
+document.getElementById("total").innerHTML=wash;
+
+if(wash>=25){
+
+document.getElementById("advice").innerHTML="👀 洗盘优秀";
+
+}else if(wash>=18){
+
+document.getElementById("advice").innerHTML="⚠️ 一般";
+
+}else{
+
+document.getElementById("advice").innerHTML="❌ 放弃";
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>
